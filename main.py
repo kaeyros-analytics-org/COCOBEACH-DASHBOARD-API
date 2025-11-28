@@ -9,9 +9,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI(title="Analytics API")
+from routers import marge_event
+from routers import ARPU
+from routers import cohorte
+from routers import total_revenue_produit
+from routers import filters_section
 
 # Charger router analytics
 app.include_router(analytics.router)
+app.include_router(marge_event.router)
+app.include_router(ARPU.router)
+app.include_router(cohorte.router)
+app.include_router(total_revenue_produit.router)
+app.include_router(filters_section.router)
 
 # Intervalle de refresh (en minutes)
 REFRESH_MINUTES = int(os.getenv("CACHE_REFRESH_INTERVAL", 10))
