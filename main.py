@@ -1,5 +1,7 @@
+# main.py
+
 from fastapi import FastAPI
-from routers import analytics
+from routers import analytics, reservation_paye, revenue, total_reservations, aov, aov_debug, quantity_sold, daily_evolution, daily_revenue, top_events, daily_reservations_payments
 from utils import set_cache, make_cache_key
 from analytics_cache_refresh import refresh_all_cache
 import asyncio

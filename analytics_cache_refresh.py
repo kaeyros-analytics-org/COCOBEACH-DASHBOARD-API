@@ -15,6 +15,43 @@ async def refresh_all_cache():
     total_data = compute_total_reservations()
     set_cache(key_total, json.dumps(total_data))
 
+    key_total1 = make_cache_key("total_reservations")
+    total_data1 = compute_total_reservations()
+    set_cache(key_total1, json.dumps(total_data1))
+
+    key_aov = make_cache_key("aov")
+    aov_data = compute_detailed_aov()
+    set_cache(key_aov, json.dumps(aov_data))
+
+    key_dailyev = make_cache_key("daily_evolution")
+    dailyev_data = compute_daily_evolution()
+    set_cache(key_dailyev, json.dumps(dailyev_data))
+
+    key_dailyres = make_cache_key("daily_reservations_payments")
+    dailyres_data = compute_daily_reservations_payments()
+    set_cache(key_dailyres, json.dumps(dailyres_data))
+
+    key_dailyrev = make_cache_key("daily_revenue")
+    dailyrev_data = compute_daily_revenue()
+    set_cache(key_dailyrev, json.dumps(dailyrev_data))
+
+    key_qty = make_cache_key("quantity_sold")
+    qty_data = compute_quantity_sold()
+    set_cache(key_qty, json.dumps(qty_data))
+
+    key_respaid = make_cache_key("reservation_paye")
+    respaid_data = compute_percent_paid_reservations()
+    set_cache(key_respaid, json.dumps(respaid_data))
+
+    key_rev = make_cache_key("revenue")
+    rev_data = compute_total_revenue()
+    set_cache(key_rev, json.dumps(rev_data))
+
+    key_topev = make_cache_key("top_events")
+    topev_data = compute_top_events_by_revenue()
+    set_cache(key_topev, json.dumps(topev_data))
+
+
     key_total_arpu = make_cache_key("arpu_daily")
     total_arpu= compute_arpu_daily()
     set_cache(key_total_arpu, json.dumps(total_arpu))
