@@ -1,5 +1,7 @@
+# main.py
+
 from fastapi import FastAPI
-from routers import analytics
+from routers import analytics, reservation_paye, revenue, total_reservations, aov, aov_debug, quantity_sold, daily_evolution, daily_revenue, top_events, daily_reservations_payments
 from utils import set_cache, make_cache_key
 from analytics_cache_refresh import refresh_all_cache
 import asyncio
@@ -12,6 +14,16 @@ app = FastAPI(title="Analytics API")
 
 # Charger router analytics
 app.include_router(analytics.router)
+app.include_router(total_reservations.router) 
+app.include_router(reservation_paye.router)
+app.include_router(revenue.router)
+app.include_router(aov.router)
+app.include_router(aov_debug.router)
+app.include_router(quantity_sold.router)
+app.include_router(daily_evolution.router)
+app.include_router(daily_revenue.router)
+app.include_router(top_events.router)
+app.include_router(daily_reservations_payments.router)
 
 # Intervalle de refresh (en minutes)
 REFRESH_MINUTES = int(os.getenv("CACHE_REFRESH_INTERVAL", 10))
