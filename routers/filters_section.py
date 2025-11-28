@@ -7,7 +7,7 @@ import json
 router = APIRouter(prefix="/analytics", tags=["filters_section"])
 
 def get_filters_metadata():
-    """Récupère les métadonnées pour les filtres disponibles."""
+    """Récupère les donnees pour les filtres disponibles."""
     conn = get_connection()
     cur = conn.cursor()
 
