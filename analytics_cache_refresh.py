@@ -4,6 +4,7 @@ from routers.marge_event import compute_net_revenue_by_event
 from routers.cohorte import compute_cohort_retention
 from routers.total_revenue_produit import compute_top_products
 from routers.filters_section import get_filters_metadata
+from routers.tableau import get_bookings
 from utils import set_cache, make_cache_key
 import json
 
@@ -34,5 +35,9 @@ async def refresh_all_cache():
     key_filters = make_cache_key("filters_metadata")
     filters_metadata = get_filters_metadata()
     set_cache(key_filters, json.dumps(filters_metadata))
+
+    key_tableau = make_cache_key("bookings")
+    bookings_data = get_bookings()
+    set_cache(key_tableau, json.dumps(bookings_data))
 
     print("✅ Cache refreshed successfully !")
