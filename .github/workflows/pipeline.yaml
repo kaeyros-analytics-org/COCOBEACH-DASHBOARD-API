@@ -1,0 +1,155 @@
+name: CI/CD Pipeline - cocobeach-dashboard
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+  
+      version_bump:
+        description: "Version bump type (if auto-increment)"
+        required: false
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+
+
+permissions:
+  contents: write
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: kaeyros-analytics-org
+
+jobs:
+  build-and-push:
+    name: Build & Push cocobeach-dashboard-api Dashboard Image
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || github.ref_name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Auto-increment version (only for workflow_dispatch)
+      - name: Get latest version and auto-increment
+        if: github.event_name == 'workflow_dispatch'
+        id: version
+        run: |
+          chmod +x .github/scripts/get-version.sh
+          .github/scripts/get-version.sh \
+            "${{ github.event.inputs.release_version || '' }}" \
+            "${{ github.event.inputs.version_bump || 'patch' }}"
+
+      - name: Set Git Commit SHA as Tag
+        run: echo "IMAGE_TAG_DEV=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Define environment & version
+        run: |
+          # Determine environment
+          ENVIRONMENT=${{ github.event.inputs.environment || github.ref_name }}
+          
+          # Map environment to image name
+          case "$ENVIRONMENT" in
+            develop)     IMAGE_NAME=cocobeach-dashboard-dev ;;
+            staging)     IMAGE_NAME=cocobeach-dashboard-stg ;;
+            production)  IMAGE_NAME=cocobeach-dashboard-prod ;;
+            *)           echo "❌ Unsupported environment: $ENVIRONMENT" && exit 1 ;;
+          esac
+          
+          # Set version based on trigger
+          VERSION=${{ github.event_name == 'workflow_dispatch' && steps.version.outputs.NEW_VERSION || env.IMAGE_TAG_DEV }}
+          
+          # Export variables
+          cat >> $GITHUB_ENV <<EOF
+          ENVIRONMENT=$ENVIRONMENT
+          VERSION=$VERSION
+          IMAGE_NAME=$IMAGE_NAME
+          BACKEND_IMAGE=${REGISTRY}/${OWNER}/${IMAGE_NAME}:${VERSION}
+          BACKEND_IMAGE_LATEST=${REGISTRY}/${OWNER}/${IMAGE_NAME}:latest
+          EOF
+          
+          echo "backend:${REGISTRY}/${OWNER}/${IMAGE_NAME}:${VERSION}" > image.txt
+          echo "📦 Environment: $ENVIRONMENT | 🏷️ Version: $VERSION | 🐳 Image: $IMAGE_NAME"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-info
+          path: image.txt
+
+      - name: 🔐 Authenticate to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.TOKEN }}
+
+      - name: Build & push backend image (version + latest)
+        run: |
+          docker build \
+            -t $BACKEND_IMAGE \
+            -t $BACKEND_IMAGE_LATEST \
+            -f Dockerfile \
+            .
+          docker push $BACKEND_IMAGE
+          docker push $BACKEND_IMAGE_LATEST
+
+          echo "✅ cocobeach-dashboard-api Dashboard images pushed:"
+          echo "- $BACKEND_IMAGE"
+          echo "- $BACKEND_IMAGE_LATEST"
+
+      - name: 🧹 Clean up pipeline images
+        if: always()
+        run: |
+          if [ -f .github/scripts/cleanup-images.sh ]; then
+            chmod +x .github/scripts/cleanup-images.sh
+            .github/scripts/cleanup-images.sh \
+              "${{ env.REGISTRY }}" \
+              "${{ env.OWNER }}" \
+              "${{ env.IMAGE_NAME }}" \
+              "${{ env.BACKEND_IMAGE }}" \
+              "${{ env.BACKEND_IMAGE_LATEST }}"
+          else
+            echo "⚠️  Cleanup script not found, skipping cleanup"
+          fi
+
+  create-release:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: build-and-push
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version
+        id: get_version
+        run: |
+          chmod +x .github/scripts/get-version.sh
+          .github/scripts/get-version.sh \
+            "${{ github.event.inputs.release_version || '' }}" \
+            "${{ github.event.inputs.version_bump || 'patch' }}"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.NEW_VERSION }}
+          name: "${{ github.event.inputs.environment }} Release v${{ steps.get_version.outputs.NEW_VERSION }}"
+          generate_release_notes: true

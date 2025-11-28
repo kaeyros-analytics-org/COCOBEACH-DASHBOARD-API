@@ -1,14 +1,9 @@
 from routers.analytics import compute_total_reservations
-from routers.total_reservations import compute_total_reservations
-from routers.aov import compute_detailed_aov
-from routers.daily_evolution import compute_daily_evolution
-from routers.daily_reservations_payments import compute_daily_reservations_payments
-from routers.daily_revenue import compute_daily_revenue
-from routers.quantity_sold import compute_quantity_sold
-from routers.reservation_paye import compute_percent_paid_reservations
-from routers.revenue import compute_total_revenue
-from routers.top_events import compute_top_events_by_revenue
-
+from routers.ARPU import compute_arpu_daily
+from routers.marge_event import compute_net_revenue_by_event
+from routers.cohorte import compute_cohort_retention
+from routers.total_revenue_produit import compute_top_products
+from routers.filters_section import get_filters_metadata
 from utils import set_cache, make_cache_key
 import json
 
@@ -57,5 +52,24 @@ async def refresh_all_cache():
     set_cache(key_topev, json.dumps(topev_data))
 
 
+    key_total_arpu = make_cache_key("arpu_daily")
+    total_arpu= compute_arpu_daily()
+    set_cache(key_total_arpu, json.dumps(total_arpu))
+
+    key_total_marge = make_cache_key("net_revenue_by_event")
+    total_marge= compute_net_revenue_by_event()
+    set_cache(key_total_marge, json.dumps(total_marge))
+
+    key_total_top_products = make_cache_key("top_products")
+    total_top_products= compute_top_products()
+    set_cache(key_total_top_products, json.dumps(total_top_products))
+
+    key_total_cohort = make_cache_key("cohort_retention")
+    total_cohort= compute_cohort_retention()
+    set_cache(key_total_cohort, json.dumps(total_cohort))
+
+    key_filters = make_cache_key("filters_metadata")
+    filters_metadata = get_filters_metadata()
+    set_cache(key_filters, json.dumps(filters_metadata))
 
     print("✅ Cache refreshed successfully !")

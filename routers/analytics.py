@@ -12,8 +12,8 @@ router = APIRouter(prefix="/analytics", tags=["Analytics"])
 # Fonction de calcul du total de réservation
 # ---------------------------------------
 def compute_total_reservations(
-    date_start: Optional[str] = None,
-    date_end: Optional[str] = None,
+    date_start: Optional[date] = None,
+    date_end: Optional[date] = None,
     events: Optional[List[str]] = None,
     companies: Optional[List[str]] = None,
     products: Optional[List[str]] = None,
