@@ -13,7 +13,8 @@ def get_bookings(
     companies: Optional[List[str]] = None,
     products: Optional[List[str]] = None,
     payment_methods: Optional[List[str]] = None,
-    locations: Optional[List[str]] = None
+    locations: Optional[List[str]] = None,
+    page: Optional[int] = 1
 ):
     conn = get_connection()
     cur = conn.cursor()
@@ -47,6 +48,8 @@ def get_bookings(
 
     where_clause = f"WHERE {' AND '.join(filters)}" if filters else ""
 
+    offset = (page - 1) * 20
+
     # Query principale
     query = f"""
         SELECT 
@@ -68,11 +71,14 @@ def get_bookings(
         LEFT JOIN public."Company" co ON co.id = b.company_id
         LEFT JOIN public."Payments" p ON p.booking_id = b.id
         {where_clause}
-        ORDER BY b.date_of_booking DESC;
-    """
+        ORDER BY b.date_of_booking DESC
+        LIMIT %s OFFSET %s;
 
-    cur.execute(query, tuple(params))
+    """
+    
+    cur.execute(query, tuple(params + [20, offset]))
     rows = cur.fetchall()
+
 
     
     result = []
@@ -104,8 +110,10 @@ def bookings(
     companies: Optional[List[str]] = Query(None, description="Liste Company IDs"),
     products: Optional[List[str]] = Query(None, description="Liste Product IDs"),
     payment_methods: Optional[List[str]] = Query(None, description="Liste des methodes paiement"),
-    locations: Optional[List[str]] = Query(None, description="Liste des locations")
+    locations: Optional[List[str]] = Query(None, description="Liste des locations"),
+    page: Optional[int] = Query(1, description="Numéro de page")
 ):
+    #page_size = 20
     cache_key = make_cache_key(
         "bookings",
         date_start=date_start,
@@ -114,12 +122,15 @@ def bookings(
         companies=companies,
         products=products,
         payment_methods=payment_methods,
-        locations=locations
+        locations=locations,
+        page=page
+        #page_size=page_size
     )
 
     cached = get_cache(cache_key)
     if cached:
         return json.loads(cached)
+   
 
     result = get_bookings(
         date_start=date_start,
@@ -128,7 +139,9 @@ def bookings(
         companies=companies,
         products=products,
         payment_methods=payment_methods,
-        locations=locations
+        locations=locations,
+        page=page
+        #page_size=page_size
     )
 
     set_cache(cache_key, json.dumps(result))

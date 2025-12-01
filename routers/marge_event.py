@@ -82,52 +82,6 @@ def compute_net_revenue_by_event(
     conn.close()
     return result
 
-
-@router.get("/net_revenue_by_event",summary="Revenue net / marge simple par evenement")
-def net_revenue_by_event(
-    date_start: Optional[date] = Query(None, description="Date de debut (YYYY-MM-DD)"),
-    date_end: Optional[date] = Query(None, description="Date de fin (YYYY-MM-DD)"),
-    events: Optional[List[str]] = Query(None, description="Liste des Event IDs"),
-    companies: Optional[List[str]] = Query(None, description="Liste des Company IDs"),
-    products: Optional[List[str]] = Query(None, description="Liste des Product IDs"),
-    payment_methods: Optional[List[str]] = Query(None, description="Liste des methodes de paiement"),
-    locations: Optional[List[str]] = Query(None, description="Liste des locations")
-):
-    # genere cle
-    cache_key = make_cache_key(
-        "net_revenue_by_event",
-        date_start=date_start,
-        date_end=date_end,
-        events=events,
-        companies=companies,
-        products=products,
-        payment_methods=payment_methods,
-        locations=locations
-    )
-
-    # verifie dans le cache
-    cached = get_cache(cache_key)
-    if cached:
-        print("HIT CACHE")
-        return json.loads(cached)
-
-    # revenu net
-    result = compute_net_revenue_by_event(
-        date_start=date_start,
-        date_end=date_end,
-        events=events,
-        companies=companies,
-        products=products,
-        payment_methods=payment_methods,
-        locations=locations
-    )
-
-    # stock en cache
-    set_cache(cache_key, json.dumps(result))
-
-    return result
-
-
 @router.get("/net_revenue_by_event",summary="Revenue net / marge simple par événement")
 def net_revenue_by_event(
     date_start: Optional[date] = Query(None, description="Date de début (YYYY-MM-DD)"),
