@@ -6,7 +6,7 @@ from datetime import datetime, date
 from typing import List, Optional
 import json
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
+router = APIRouter(prefix="/analytics", tags=["Analytics1"])
 
 # ---------------------------------------
 # Fonction de calcul du total de réservation
