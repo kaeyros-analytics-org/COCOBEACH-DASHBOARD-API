@@ -28,7 +28,7 @@ def compute_quantity_sold(
     locations: Optional[List[str]] = None
 ) -> Dict[str, Any]:
     """
-    Calcule la quantité totale de produits vendus avec filtres optionnels
+    Calcule la quantité totale de produits vendus 
     
     Returns:
         Dict contenant:
