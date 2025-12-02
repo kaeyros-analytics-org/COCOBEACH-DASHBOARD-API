@@ -18,14 +18,14 @@ from routers import total_revenue_produit
 from routers import filters_section
 
 # Charger router analytics
-app.include_router(analytics.router)
+#app.include_router(analytics.router)
 app.include_router(marge_event.router)
 app.include_router(ARPU.router)
 app.include_router(cohorte.router)
 app.include_router(total_revenue_produit.router)
 app.include_router(filters_section.router)
 # Charger router analytics
-app.include_router(analytics.router)
+#app.include_router(analytics.router)
 app.include_router(total_reservations.router) 
 app.include_router(reservation_paye.router)
 app.include_router(revenue.router)
