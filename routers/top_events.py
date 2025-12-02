@@ -143,7 +143,7 @@ def top_events_by_revenue(
     
     """
     try:
-        # 🔹 Générer clé cache unique
+        # Générer clé cache unique
         cache_key = make_cache_key(
             "top_events_by_revenue",
             date_start=date_start,
@@ -153,13 +153,13 @@ def top_events_by_revenue(
             locations=locations
         )
 
-        # 🔹 Vérifier cache
+        # Vérifier cache
         cached = get_cache(cache_key)
         if cached:
             print("⚡ HIT CACHE - top_events_by_revenue")
             return json.loads(cached)
 
-        # 🔹 Calculer si cache miss
+        # Calculer si cache miss
         print("🔄 CALCUL DIRECT - top_events_by_revenue")
         result = compute_top_events_by_revenue(
             date_start=date_start,
@@ -169,7 +169,7 @@ def top_events_by_revenue(
             locations=locations
         )
 
-        # 🔹 Stocker dans le cache
+        #  Stocker dans le cache
         set_cache(cache_key, json.dumps(result, default=serialize_dates))
 
         return result
@@ -177,5 +177,5 @@ def top_events_by_revenue(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Erreur inattendue dans top_events_by_revenue: {str(e)}")
+        print(f" Erreur inattendue dans top_events_by_revenue: {str(e)}")
         raise HTTPException(status_code=500, detail="Erreur interne du serveur")

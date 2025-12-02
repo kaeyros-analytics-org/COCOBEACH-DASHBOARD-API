@@ -113,7 +113,7 @@ def total_reservations(
         return json.loads(cached)
 
     # 🔹 Calculer le total si cache miss
-    print("🔄 CALCUL DIRECT - total_reservations")
+    print("CALCUL DIRECT - total_reservations")
     result = compute_total_reservations(
         date_start=date_start,
         date_end=date_end,
