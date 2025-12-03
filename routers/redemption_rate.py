@@ -1,15 +1,12 @@
 from fastapi import APIRouter, Query
 from utils import get_connection, get_cache, set_cache, make_cache_key
-from datetime import datetime, date, timedelta
+from datetime import date
 from typing import List, Optional
 import json
 
-
-
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
-# Fonction de calcul du revenue net par evenement
-def compute_net_revenue_by_event(
+def get_redemption_rate(
     date_start: Optional[date] = None,
     date_end: Optional[date] = None,
     events: Optional[List[str]] = None,
@@ -18,17 +15,19 @@ def compute_net_revenue_by_event(
     payment_methods: Optional[List[str]] = None,
     locations: Optional[List[str]] = None
 ):
+    """Calcul du taux de tickets validés"""
     conn = get_connection()
     cur = conn.cursor()
 
+   
     if not date_start or not date_end:
-        cur.execute('SELECT MIN("date_of_booking")::date, MAX("date_of_booking")::date FROM public."Booking";')
+        cur.execute('SELECT MIN("createdAt")::date, MAX("createdAt")::date FROM public."Tickets";')
         row = cur.fetchone()
         date_start = date_start or row[0]
         date_end = date_end or row[1]
 
-    # filtres pour Booking
-    filters = ['b."deletedAt" IS NULL', 'b."date_of_booking"::date BETWEEN %s AND %s']
+
+    filters = ['T."deletedAt" IS NULL', 'T."createdAt"::date BETWEEN %s AND %s']
     params = [date_start, date_end]
 
     if events:
@@ -47,47 +46,41 @@ def compute_net_revenue_by_event(
         filters.append('e."location" = ANY(%s)')
         params.append(locations)
 
-    where_clause = f"WHERE {' AND '.join(filters)}" if filters else ""
-
-    # Query SQL
-    query = f"""
-    SELECT
-        e.name AS event_name,
-        COALESCE(SUM(p.amount),0) AS revenue,
-        COALESCE(SUM(ex.amount),0) AS expenses,
-        COALESCE(SUM(p.amount),0) - COALESCE(SUM(ex.amount),0) AS net_margin
-    FROM public."Events" e
-    LEFT JOIN public."Products" pr ON pr.event_id = e.id
-    LEFT JOIN public."Booking" b ON b.product_id = pr.id
-    LEFT JOIN public."Payments" p ON p.booking_id = b.id AND p.status='success'
-    LEFT JOIN public."Expenses" ex ON ex.booking_id = b.id
-    {where_clause}
-    GROUP BY e.id, e.name
-    ORDER BY net_margin DESC;
-    """
-
-    cur.execute(query, tuple(params))
-    rows = cur.fetchall()
+    where_clause = f"WHERE {' AND '.join(filters)}"
 
     
-    if not rows:
-        result = [{"event_name": None, "revenue": 0, "expenses": 0, "marge": 0}]
-    else:
-        result = [
-            {"event_name": row[0], "revenue": float(row[1]), "expenses": float(row[2]), "marge": float(row[3])}
-            for row in rows
-        ]
+    query = f"""
+        SELECT 
+            COUNT(T.id) FILTER (WHERE T."is_used") AS redeemed_tickets,
+            COUNT(T.id) AS total_tickets      
+        FROM public."Tickets" T
+        LEFT JOIN public."Booking" b ON b.id = T.booking_id
+        LEFT JOIN public."Products" pr ON pr.id = b.product_id
+        LEFT JOIN public."Events" e ON e.id = pr.event_id
+        LEFT JOIN public."Payments" p ON p.booking_id = b.id AND p.status = 'success'
+        {where_clause}
+    """
+    cur.execute(query, params)
+    row = cur.fetchone()
+
+    
+    redeemed_tickets = row[0] or 0
+    total_tickets = row[1] or 0
+
+    # Calcul du taux
+    redemption_rate = (redeemed_tickets / total_tickets * 100) if total_tickets > 0 else 0
 
     cur.close()
     conn.close()
-    return result
 
+    return {
+        "tickets_valided": redeemed_tickets,
+        "total_tickets": total_tickets,
+        "redemption_rate_percentage": round(redemption_rate, 2)
+    }
 
-
-
-
-@router.get("/net_revenue_by_event",summary="Revenue net / marge simple par événement")
-def net_revenue_by_event(
+@router.get("/redemption_rate", summary="Taux de validation des tickets")
+def redemption_rate(
     date_start: Optional[date] = Query(None, description="Date de début (YYYY-MM-DD)"),
     date_end: Optional[date] = Query(None, description="Date de fin (YYYY-MM-DD)"),
     events: Optional[List[str]] = Query(None, description="Liste des Event IDs"),
@@ -96,10 +89,9 @@ def net_revenue_by_event(
     payment_methods: Optional[List[str]] = Query(None, description="Liste des méthodes de paiement"),
     locations: Optional[List[str]] = Query(None, description="Liste des locations")
 ):
-    """revenue net (marge simple) par événement."""
-    # genere cle
+    """Taux de validation des tickets"""
     cache_key = make_cache_key(
-        "net_revenue_by_event",
+        "redemption_rate",
         date_start=date_start,
         date_end=date_end,
         events=events,
@@ -109,14 +101,14 @@ def net_revenue_by_event(
         locations=locations
     )
 
-    # verifie dans le cache
+    # Vérification du cache
     cached = get_cache(cache_key)
     if cached:
         print("⚡ HIT CACHE")
         return json.loads(cached)
 
-    # revenu net
-    result = compute_net_revenue_by_event(
+    # Calcul du taux
+    result = get_redemption_rate(
         date_start=date_start,
         date_end=date_end,
         events=events,
@@ -126,7 +118,7 @@ def net_revenue_by_event(
         locations=locations
     )
 
-    # stock en cache
+    # Sauvegarde dans le cache
     set_cache(cache_key, json.dumps(result))
 
     return result

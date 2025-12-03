@@ -16,6 +16,11 @@ from routers import ARPU
 from routers import cohorte
 from routers import total_revenue_produit
 from routers import filters_section
+from routers import time_to_pay
+from routers import taux_echec  
+from routers import redemption_rate
+from routers import taux_occupation
+
 
 # Charger router analytics
 #app.include_router(analytics.router)
@@ -36,7 +41,10 @@ app.include_router(daily_evolution.router)
 app.include_router(daily_revenue.router)
 app.include_router(top_events.router)
 app.include_router(daily_reservations_payments.router)
-
+app.include_router(time_to_pay.router)
+app.include_router(redemption_rate.router)
+app.include_router(taux_echec.router)
+app.include_router(taux_occupation.router)
 # Intervalle de refresh (en minutes)
 REFRESH_MINUTES = int(os.getenv("CACHE_REFRESH_INTERVAL", 10))
 
