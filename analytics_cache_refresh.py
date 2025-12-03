@@ -1,5 +1,5 @@
 from routers.analytics import compute_total_reservations
-from routers.ARPU import compute_arpu_daily
+from routers.ARPU import compute_arpu_daily 
 from routers.marge_event import compute_net_revenue_by_event
 from routers.cohorte import compute_cohort_retention
 from routers.total_revenue_produit import compute_top_products
@@ -16,6 +16,7 @@ from routers.top_events import compute_top_events_by_revenue
 from routers.redemption_rate import get_redemption_rate
 from routers.taux_echec import get_taux_echec
 from routers.taux_occupation import get_event_capacity_usage
+from routers.tableau import get_bookings
 
 from utils import set_cache, make_cache_key
 import json
@@ -32,7 +33,7 @@ async def refresh_all_cache():
     total_data1 = compute_total_reservations()
     set_cache(key_total1, json.dumps(total_data1))
 
-    key_aov = make_cache_key("aov")
+    key_aov = make_cache_key("aov_detailed")
     aov_data = compute_detailed_aov()
     set_cache(key_aov, json.dumps(aov_data))
 
@@ -55,6 +56,7 @@ async def refresh_all_cache():
     key_respaid = make_cache_key("reservation_paye")
     respaid_data = compute_percent_paid_reservations()
     set_cache(key_respaid, json.dumps(respaid_data))
+    
 
     key_rev = make_cache_key("revenue")
     rev_data = compute_total_revenue()
@@ -101,4 +103,9 @@ async def refresh_all_cache():
     event_capacity_usage_data = get_event_capacity_usage()
     set_cache(key_event_capacity_usage, json.dumps(event_capacity_usage_data))
 
+    key_tableau_bookings = make_cache_key("bookings")
+    tableau_bookings_data = get_bookings()
+    set_cache(key_tableau_bookings, json.dumps(tableau_bookings_data))
+
     print("✅ Cache refreshed successfully !")
+

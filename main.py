@@ -20,10 +20,12 @@ from routers import time_to_pay
 from routers import taux_echec  
 from routers import redemption_rate
 from routers import taux_occupation
+from routers import tableau
 
 
 # Charger router analytics
 #app.include_router(analytics.router)
+app.include_router(tableau.router)
 app.include_router(marge_event.router)
 app.include_router(ARPU.router)
 app.include_router(cohorte.router)
