@@ -6,7 +6,15 @@ from utils import set_cache, make_cache_key
 from analytics_cache_refresh import refresh_all_cache
 import asyncio
 import os
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Exemple : ["https://monfrontend.com"]
+    allow_credentials=True,
+    allow_methods=["*"],  # ["GET", "POST", "PUT", "DELETE"]
+    allow_headers=["*"],  # ["Authorization", "Content-Type"]
+)
 
 load_dotenv()
 
