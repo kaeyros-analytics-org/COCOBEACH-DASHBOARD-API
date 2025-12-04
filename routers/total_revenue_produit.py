@@ -81,44 +81,6 @@ def compute_top_products(
     conn.close()
     return result
 
-@router.get("/top_products", summary="Top Products")
-def top_products(
-    date_start: Optional[date] = Query(None, description="Date debut (YYYY-MM-DD)"),
-    date_end: Optional[date] = Query(None, description="Date fin (YYYY-MM-DD)"),
-    events: Optional[List[str]] = Query(None, description="Liste Event IDs"),
-    companies: Optional[List[str]] = Query(None, description="Liste Company IDs"),
-    products: Optional[List[str]] = Query(None, description="Liste Product IDs"),
-    payment_methods: Optional[List[str]] = Query(None, description="Liste des methodes paiement"),
-    locations: Optional[List[str]] = Query(None, description="Liste des locations")
-):
-    cache_key = make_cache_key(
-        "top_products",
-        date_start=date_start,
-        date_end=date_end,
-        events=events,
-        companies=companies,
-        products=products,
-        payment_methods=payment_methods,
-        locations=locations,
-    )
-
-    cached = get_cache(cache_key)
-    if cached:
-        return json.loads(cached)
-
-    result = compute_top_products(
-        date_start=date_start,
-        date_end=date_end,
-        events=events,
-        companies=companies,
-        products=products,
-        payment_methods=payment_methods,
-        locations=locations,
-    )
-
-    set_cache(cache_key, json.dumps(result))
-    return result
-
 
 @router.get("/top_products",summary="Top Products ")
 def top_products(

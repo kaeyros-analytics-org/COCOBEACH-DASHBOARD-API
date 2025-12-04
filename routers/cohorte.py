@@ -126,8 +126,8 @@ def compute_cohort_retention(
         "cohorts": cohorts_sorted,
         "months_since": months_since,
         "values_count": values_count,
-        "values_percentage": values_percentage,
-        "custormer_count": [cohort_sizes.get(c, 0) for c in cohorts_sorted]
+        "values_percentage": values_percentage
+        #"custormer_count": [cohort_sizes.get(c, 0) for c in cohorts_sorted]
     }
 
 # FastAPI endpoint
