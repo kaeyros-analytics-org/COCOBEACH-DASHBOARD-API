@@ -8,6 +8,7 @@ import asyncio
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+app = FastAPI(title="Analytics API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Exemple : ["https://monfrontend.com"]
@@ -18,7 +19,7 @@ app.add_middleware(
 
 load_dotenv()
 
-app = FastAPI(title="Analytics API")
+
 from routers import marge_event
 from routers import ARPU
 from routers import cohorte
