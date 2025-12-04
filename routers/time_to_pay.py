@@ -4,7 +4,7 @@ from datetime import datetime, date, timedelta
 from typing import List, Optional
 import json
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
+router = APIRouter(prefix="/analytics", tags=["Monitoring"])
 
 
 def time_to_pay(

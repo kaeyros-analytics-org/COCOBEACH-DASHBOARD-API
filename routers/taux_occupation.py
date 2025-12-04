@@ -4,7 +4,7 @@ from datetime import date
 from typing import List, Optional
 import json
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
+router = APIRouter(prefix="/analytics", tags=["Monitoring"])
 
 
 def get_event_capacity_usage(
