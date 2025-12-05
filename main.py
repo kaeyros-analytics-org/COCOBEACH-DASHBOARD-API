@@ -30,6 +30,7 @@ from routers import taux_echec
 from routers import redemption_rate
 from routers import taux_occupation
 from routers import tableau
+from routers import taux_cancelled
 
 
 # Charger router analytics
@@ -56,6 +57,7 @@ app.include_router(time_to_pay.router)
 app.include_router(redemption_rate.router)
 app.include_router(taux_echec.router)
 app.include_router(taux_occupation.router)
+app.include_router(taux_cancelled.router)
 # Intervalle de refresh (en minutes)
 REFRESH_MINUTES = int(os.getenv("CACHE_REFRESH_INTERVAL", 10))
 

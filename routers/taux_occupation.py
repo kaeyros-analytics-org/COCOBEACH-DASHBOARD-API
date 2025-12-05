@@ -51,6 +51,7 @@ def get_event_capacity_usage(
             AND (%(payment_methods)s IS NULL OR p.payment_method = ANY(%(payment_methods)s))
         WHERE (%(events)s IS NULL OR e.id = ANY(%(events)s))
           AND (%(locations)s IS NULL OR e.location = ANY(%(locations)s))
+          AND e."deletedAt" IS NULL
         GROUP BY e.id, e.name, e.capacity
         ORDER BY tickets_sold DESC;
     """

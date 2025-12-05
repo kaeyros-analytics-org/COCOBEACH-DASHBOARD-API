@@ -17,6 +17,7 @@ from routers.redemption_rate import get_redemption_rate
 from routers.taux_echec import get_taux_echec
 from routers.taux_occupation import get_event_capacity_usage
 from routers.tableau import get_bookings
+from routers.taux_cancelled import get_total_canceled_bookings
 
 from utils import set_cache, make_cache_key
 import json
@@ -106,6 +107,10 @@ async def refresh_all_cache():
     key_tableau_bookings = make_cache_key("bookings")
     tableau_bookings_data = get_bookings()
     set_cache(key_tableau_bookings, json.dumps(tableau_bookings_data))
+
+    key_canceled_bookings = make_cache_key("canceled_bookings")
+    canceled_bookings_data = get_total_canceled_bookings()
+    set_cache(key_canceled_bookings, json.dumps(canceled_bookings_data))
 
     print("✅ Cache refreshed successfully !")
 
